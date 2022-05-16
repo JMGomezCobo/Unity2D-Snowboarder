@@ -5,29 +5,30 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] float torqueAmount = 1f;
-    [SerializeField] float boostSpeed = 30f;
-    [SerializeField] float baseSpeed = 20f;
+    [Header("Player Settings")]
+    [SerializeField] private float _baseSpeed = 20f;
+    [SerializeField] private float _boostSpeed = 30f;
+    [SerializeField] private float _rotationSpeed = 1f;
+    [SerializeField] private float _jumpForce = 50f;
 
-    Rigidbody2D rb2d;
-    SurfaceEffector2D surfaceEffector2D;
-    bool canMove = true;
-
-    // Start is called before the first frame update
-    void Start()
+    private Rigidbody2D _rigidbody2D;
+    private SurfaceEffector2D _surfaceEffector2D;
+    
+    private bool canMove = true;
+    
+    private void Start()
     {
-        rb2d = GetComponent<Rigidbody2D>();
-        surfaceEffector2D = FindObjectOfType<SurfaceEffector2D>();
+        _rigidbody2D = GetComponent<Rigidbody2D>();
+        _surfaceEffector2D = FindObjectOfType<SurfaceEffector2D>();
     }
-
-    // Update is called once per frame
-    void Update()
+    
+    private void Update()
     {
-        if (canMove)
-        {
-            RotatePlayer();
-            RespondToBoost();
-        }
+        if (!canMove) return;
+
+        HandleBoost();
+        HandleJump();
+        HandleRotation();
     }
 
     public void DisableControls()
@@ -35,27 +36,23 @@ public class PlayerController : MonoBehaviour
         canMove = false;
     }
 
-    void RespondToBoost()
+    private void HandleBoost()
     {
-        if (Input.GetKey(KeyCode.UpArrow))
-        {
-            surfaceEffector2D.speed = boostSpeed;
-        }
-        else
-        {
-            surfaceEffector2D.speed = baseSpeed;
-        }
+        _surfaceEffector2D.speed = Input.GetKey(KeyCode.UpArrow) ? _boostSpeed : _baseSpeed;
     }
 
-    void RotatePlayer()
+    private void HandleJump()
+    {
+        if (Input.GetButtonDown("Jump")) 
+            _rigidbody2D.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
+    }
+
+    private void HandleRotation()
     {
         if (Input.GetKey(KeyCode.LeftArrow))
-        {
-            rb2d.AddTorque(torqueAmount);
-        }
-        else if (Input.GetKey(KeyCode.RightArrow))
-        {
-            rb2d.AddTorque(-torqueAmount);
-        }
+            _rigidbody2D.AddTorque(_rotationSpeed);
+
+        else if (Input.GetKey(KeyCode.RightArrow)) 
+            _rigidbody2D.AddTorque(-_rotationSpeed);
     }
 }
